@@ -59,7 +59,7 @@ def require_jwt(function):
 
 @APP.route('/', methods=['POST', 'GET'])
 def health():
-    return jsonify(f"Healthy & Log Level is Set")
+    return jsonify(f"Healthy")
 
 
 @APP.route('/auth', methods=['POST'])
@@ -80,8 +80,14 @@ def auth():
 
     user_data = body
 
-    return jsonify(token=_get_jwt(user_data).decode('utf-8'))
+    # had to modify next lines of code because of error in pytest client json handling
+    # the following lines all the tests and the actual requests to pass
+    token = _get_jwt(user_data)
 
+    if str(type(token)) == "<class 'bytes'>":
+        return jsonify(token=token.decode('utf-8'))
+    else:
+        return jsonify(token=token)
 
 @APP.route('/contents', methods=['GET'])
 def decode_jwt():
